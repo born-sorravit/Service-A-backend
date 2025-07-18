@@ -4,8 +4,15 @@ import { ExampleModule } from './example/example.module';
 import { UsersModule } from './users/users.module';
 import { WalletModule } from './wallet/wallet.module';
 import { RatesModule } from './rates/rates.module';
+import { PaymentsModule } from './payments/payments.module';
 
-const commonModules = [ExampleModule, UsersModule, WalletModule, RatesModule];
+const commonModules = [
+  ExampleModule,
+  UsersModule,
+  WalletModule,
+  RatesModule,
+  PaymentsModule,
+];
 
 @Module({
   imports: [
