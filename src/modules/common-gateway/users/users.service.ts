@@ -1,0 +1,108 @@
+import { Injectable } from '@nestjs/common';
+import { CreateUserDto } from './dto/create-user.dto';
+import { InjectEntityManager } from '@nestjs/typeorm';
+import { EntityManager } from 'typeorm';
+import { UserRepository } from 'src/entities/users/user.repository';
+import { BaseService } from 'src/shared/services/base.service';
+import { decryptPassword } from 'src/utils/decryptPassword';
+import { encryptPassword } from 'src/utils/hashPassword';
+import { JwtService } from '@nestjs/jwt';
+
+@Injectable()
+export class UsersService extends BaseService {
+  constructor(
+    @InjectEntityManager() private readonly manager: EntityManager,
+    // Repositories
+    private readonly userRepository: UserRepository,
+
+    // Services
+    private readonly jwtService: JwtService,
+  ) {
+    super();
+  }
+  async register(createUserDto: CreateUserDto) {
+    try {
+      const password = await encryptPassword(
+        createUserDto.password,
+        createUserDto.name,
+        createUserDto.email,
+      );
+
+      const userExists = await this.userRepository.findOne({
+        where: { email: createUserDto.email },
+      });
+
+      if (userExists) {
+        throw new Error('User already exists');
+      }
+
+      const newUser = {
+        name: createUserDto.name,
+        email: createUserDto.email,
+        username: createUserDto.username,
+        password: password,
+      };
+
+      const user = this.userRepository.create(newUser);
+
+      await this.userRepository.save(user);
+
+      return this.success({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        username: user.username,
+      });
+    } catch (error) {
+      return this.error('Failed to create user', error.message);
+    }
+  }
+
+  async login(username: string, password: string) {
+    try {
+      const user = await this.userRepository.findOne({ where: { username } });
+
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      const isPasswordValidFromDB = await decryptPassword(
+        user.password,
+        user.name,
+        user.email,
+      );
+
+      const isPasswordValidFromClient = await decryptPassword(
+        password,
+        user.name,
+        user.email,
+      );
+
+      if (
+        user.username !== username ||
+        isPasswordValidFromDB !== isPasswordValidFromClient
+      ) {
+        return this.error('Invalid username or password');
+      }
+
+      // ✅ สร้าง JWT Token
+      const payload = {
+        sub: user.id,
+        email: user.email,
+        name: user.name,
+      };
+
+      const accessToken = this.jwtService.sign(payload);
+
+      return this.success({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        username: user.username,
+        accessToken,
+      });
+    } catch (error) {
+      return this.error('Login failed', error.message);
+    }
+  }
+}

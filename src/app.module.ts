@@ -13,7 +13,7 @@ import { BullModule } from '@nestjs/bullmq';
 import { ScheduleModule } from '@nestjs/schedule';
 import { RequestContextMiddleware } from './shared/middleware/request-context.middleware';
 import { LoggerMiddleware } from './shared/middleware/logger.middleware';
-import { UsersModule } from './users/users.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -44,12 +44,10 @@ import { UsersModule } from './users/users.module';
         },
       }),
     }),
-
     CommonGatewayModule,
     ExternalGatewayModule,
     EntitiesModule,
     SharedModule,
-    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
