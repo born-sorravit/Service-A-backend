@@ -24,7 +24,7 @@ export class RatesService extends BaseService {
         .getOne();
 
       if (!rate) {
-        throw new NotFoundException(`Rate ${currency} not found`);
+        return this.error(`Rate ${currency} not found`, 404);
       }
 
       return this.success(rate);

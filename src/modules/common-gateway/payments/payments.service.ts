@@ -50,7 +50,7 @@ export class PaymentsService extends BaseService {
         .getOne();
 
       if (!payments) {
-        throw new NotFoundException('Payment not found');
+        return this.error('Payment not found', 404);
       }
       return this.success(payments);
     } catch (error) {

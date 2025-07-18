@@ -39,7 +39,7 @@ export class UsersService extends BaseService {
       });
 
       if (userExists) {
-        throw new Error('User already exists');
+        return this.error('User already exists', 409);
       }
 
       return await this.manager.transaction(
@@ -87,7 +87,7 @@ export class UsersService extends BaseService {
       const user = await this.userRepository.findOne({ where: { username } });
 
       if (!user) {
-        throw new Error('User not found');
+        return this.error('User not found', 404);
       }
 
       const isPasswordValidFromDB = await decryptPassword(
