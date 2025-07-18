@@ -8,14 +8,21 @@ import { BigNumber } from 'bignumber.js';
 import { DepositWalletDto } from './dto/deposit-wallet.dto';
 import { WithdrawWalletDto } from './dto/withdraw-wallet.dto';
 import { UserRepository } from 'src/entities/users/user.repository';
+import { RatesService } from '../rates/rates.service';
+import { IRate } from 'src/interfaces/rates/rates.interface';
+import { IResponse } from 'src/shared/interfaces/response.interface';
+import { RateEntity } from 'src/entities/rate/Rate.entity';
 
 @Injectable()
 export class WalletService extends BaseService {
   constructor(
     @InjectEntityManager() private readonly manager: EntityManager,
     // Repositories
-    private readonly walletRepository: WalletRepository, // Services
+    private readonly walletRepository: WalletRepository,
     private readonly userRepository: UserRepository,
+
+    // Services
+    private readonly ratesService: RatesService,
   ) {
     super();
   }
@@ -29,20 +36,32 @@ export class WalletService extends BaseService {
       if (!wallet) {
         return this.error('Wallet not found');
       }
-
+      let newAmount: string;
+      let rate: IResponse<RateEntity>;
       if (depositWalletDto.currency !== ECurrency.USD) {
-        // TODO : เพิ่มเงินเป็นสกุลเงินอื่นๆ
-      } else {
-        wallet.balance = new BigNumber(wallet.balance)
-          .plus(depositWalletDto.amount)
+        rate = await this.ratesService.getRate(depositWalletDto.currency);
+        newAmount = new BigNumber(depositWalletDto.amount)
+          .dividedBy(rate.data.rateToUSD)
+          .toFixed(2)
           .toString();
+      } else {
+        newAmount = depositWalletDto.amount.toString();
       }
 
+      const newBalance = new BigNumber(wallet.balance)
+        .plus(newAmount)
+        .toFixed(2)
+        .toString();
+
+      wallet.balance = newBalance;
       await this.walletRepository.save(wallet);
       return this.success({
         id: wallet.id,
-        balance: wallet.balance,
-        currency: wallet.currency,
+        depositAmount: Number(newAmount),
+        depositCurrency: depositWalletDto.currency,
+        rateToUSD: Number(rate.data.rateToUSD),
+        totalBalance: Number(newBalance),
+        currencyBalance: wallet.currency,
       });
     } catch (error) {
       return this.error('Failed to deposit', error.message);
@@ -71,31 +90,50 @@ export class WalletService extends BaseService {
         return this.error('Recipient user not found');
       }
 
+      let newAmount: string;
+      let rate: IResponse<RateEntity>;
+      if (withdrawWalletDto.currency !== ECurrency.USD) {
+        rate = await this.ratesService.getRate(withdrawWalletDto.currency);
+        newAmount = new BigNumber(withdrawWalletDto.amount)
+          .dividedBy(rate.data.rateToUSD)
+          .toFixed(2)
+          .toString();
+      } else {
+        newAmount = withdrawWalletDto.amount.toString();
+      }
+
       // Check balance ก่อนจะทำการ withdraw
       const checkBalance = new BigNumber(fromWallet.balance).isLessThan(
-        withdrawWalletDto.amount,
+        newAmount,
       );
 
       if (checkBalance) {
         return this.error('Insufficient balance');
       }
 
-      if (withdrawWalletDto.currency !== ECurrency.USD) {
-        // TODO : ถอนเงินเป็นสกุลเงินอื่นๆ
-      } else {
-        // Withdraw จากผู้ส่ง
-        fromWallet.balance = new BigNumber(fromWallet.balance)
-          .minus(withdrawWalletDto.amount)
-          .toString();
+      // Withdraw จากผู้ส่ง
+      const newBalance = new BigNumber(fromWallet.balance)
+        .minus(newAmount)
+        .toFixed(2)
+        .toString();
+      fromWallet.balance = newBalance;
 
-        // Deposit ให้กับผู้รับ
-        await this.deposit(recipientUser.wallet.id, {
-          amount: withdrawWalletDto.amount,
-          currency: withdrawWalletDto.currency,
-        });
+      // Deposit ให้กับผู้รับ
+      await this.deposit(recipientUser.wallet.id, {
+        amount: withdrawWalletDto.amount,
+        currency: withdrawWalletDto.currency,
+      });
 
-        await this.walletRepository.save(fromWallet);
-      }
+      await this.walletRepository.save(fromWallet);
+
+      return this.success({
+        id: fromWallet.id,
+        withdrawnAmount: Number(newAmount),
+        withdrawnCurrency: withdrawWalletDto.currency,
+        rateToUSD: Number(rate.data.rateToUSD),
+        totalBalance: Number(newBalance),
+        currencyBalance: fromWallet.currency,
+      });
     } catch (error) {
       return this.error('Failed to withdraw', error.message);
     }

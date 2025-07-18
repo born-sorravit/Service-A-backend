@@ -1,5 +1,5 @@
 export enum ECurrency {
-  USD = 'USD',
-  THB = 'THB',
-  CNY = 'CNY',
+  USD = 'USD', // rate 1
+  THB = 'THB', // rate 32.43
+  CNY = 'CNY', // rate 7.18
 }

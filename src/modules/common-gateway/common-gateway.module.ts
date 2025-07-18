@@ -3,8 +3,9 @@ import { RouterModule } from '@nestjs/core';
 import { ExampleModule } from './example/example.module';
 import { UsersModule } from './users/users.module';
 import { WalletModule } from './wallet/wallet.module';
+import { RatesModule } from './rates/rates.module';
 
-const commonModules = [ExampleModule, UsersModule, WalletModule];
+const commonModules = [ExampleModule, UsersModule, WalletModule, RatesModule];
 
 @Module({
   imports: [

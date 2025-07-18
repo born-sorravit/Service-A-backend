@@ -6,9 +6,16 @@ import { UserEntity } from './users/user.entity';
 import { UserRepository } from './users/user.repository';
 import { WalletEntity } from './wallet/wallet.entity';
 import { WalletRepository } from './wallet/wallet.repository';
+import { RateEntity } from './rate/rate.entity';
+import { RateRepository } from './rate/rate.repository';
 
-const Entitys = [ExampleEntity, UserEntity, WalletEntity];
-const Repositorys = [ExampleRepository, UserRepository, WalletRepository];
+const Entitys = [ExampleEntity, UserEntity, WalletEntity, RateEntity];
+const Repositorys = [
+  ExampleRepository,
+  UserRepository,
+  WalletRepository,
+  RateRepository,
+];
 
 @Global()
 @Module({
