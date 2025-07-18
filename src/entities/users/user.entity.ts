@@ -1,5 +1,6 @@
 import { DefaultBaseEntity } from 'src/shared/database/base.entity';
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
+import { WalletEntity } from '../wallet/wallet.entity';
 
 @Entity('users')
 export class UserEntity extends DefaultBaseEntity {
@@ -14,4 +15,8 @@ export class UserEntity extends DefaultBaseEntity {
 
   @Column()
   password: string;
+
+  @OneToOne(() => WalletEntity, { cascade: true })
+  @JoinColumn({ name: 'wallet' })
+  wallet: WalletEntity;
 }

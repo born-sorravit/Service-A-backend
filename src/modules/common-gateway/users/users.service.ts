@@ -7,6 +7,8 @@ import { BaseService } from 'src/shared/services/base.service';
 import { decryptPassword } from 'src/utils/decryptPassword';
 import { encryptPassword } from 'src/utils/hashPassword';
 import { JwtService } from '@nestjs/jwt';
+import { UserEntity } from 'src/entities/users/user.entity';
+import { WalletRepository } from 'src/entities/wallet/wallet.repository';
 
 @Injectable()
 export class UsersService extends BaseService {
@@ -14,6 +16,7 @@ export class UsersService extends BaseService {
     @InjectEntityManager() private readonly manager: EntityManager,
     // Repositories
     private readonly userRepository: UserRepository,
+    private readonly walletRepository: WalletRepository,
 
     // Services
     private readonly jwtService: JwtService,
@@ -29,30 +32,51 @@ export class UsersService extends BaseService {
       );
 
       const userExists = await this.userRepository.findOne({
-        where: { email: createUserDto.email },
+        where: [
+          { username: createUserDto.username },
+          { email: createUserDto.email },
+        ],
       });
 
       if (userExists) {
         throw new Error('User already exists');
       }
 
-      const newUser = {
-        name: createUserDto.name,
-        email: createUserDto.email,
-        username: createUserDto.username,
-        password: password,
-      };
+      return await this.manager.transaction(
+        async (transactionEntityManager) => {
+          // Create wallet
+          const wallet = await this.walletRepository.createWithTransaction(
+            transactionEntityManager,
+          );
 
-      const user = this.userRepository.create(newUser);
+          // Create user
+          const newUser = {
+            name: createUserDto.name,
+            email: createUserDto.email,
+            username: createUserDto.username,
+            password: password,
+            wallet: wallet,
+          };
 
-      await this.userRepository.save(user);
+          const user = await transactionEntityManager.create(
+            UserEntity,
+            newUser,
+          );
 
-      return this.success({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        username: user.username,
-      });
+          await transactionEntityManager.save(UserEntity, user);
+
+          return this.success({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            username: user.username,
+            wallet: {
+              balance: wallet.balance,
+              currency: wallet.currency,
+            },
+          });
+        },
+      );
     } catch (error) {
       return this.error('Failed to create user', error.message);
     }

@@ -1,0 +1,25 @@
+import { Body, Controller, Param, Post } from '@nestjs/common';
+import { WalletService } from './wallet.service';
+import { DepositWalletDto } from './dto/deposit-wallet.dto';
+import { WithdrawWalletDto } from './dto/withdraw-wallet.dto';
+
+@Controller('wallet')
+export class WalletController {
+  constructor(private readonly walletService: WalletService) {}
+
+  @Post('/deposit/:walletId')
+  async deposit(
+    @Param('walletId') walletId: string,
+    @Body() depositWalletDto: DepositWalletDto,
+  ) {
+    return this.walletService.deposit(walletId, depositWalletDto);
+  }
+
+  @Post('/withdraw/:walletId')
+  async withdraw(
+    @Param('walletId') walletId: string,
+    @Body() withdrawWalletDto: WithdrawWalletDto,
+  ) {
+    return this.walletService.withdraw(walletId, withdrawWalletDto);
+  }
+}

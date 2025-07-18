@@ -13,7 +13,6 @@ import { BullModule } from '@nestjs/bullmq';
 import { ScheduleModule } from '@nestjs/schedule';
 import { RequestContextMiddleware } from './shared/middleware/request-context.middleware';
 import { LoggerMiddleware } from './shared/middleware/logger.middleware';
-import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
