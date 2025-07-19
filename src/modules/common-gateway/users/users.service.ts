@@ -84,7 +84,13 @@ export class UsersService extends BaseService {
 
   async login(username: string, password: string) {
     try {
-      const user = await this.userRepository.findOne({ where: { username } });
+      const user = await this.userRepository
+        .createQueryBuilder('user')
+        .innerJoinAndSelect('user.wallet', 'wallet')
+        .where('LOWER(user.username) = LOWER(:username)', {
+          username: username,
+        })
+        .getOne();
 
       if (!user) {
         return this.error('User not found', 404);
@@ -101,6 +107,7 @@ export class UsersService extends BaseService {
         user.name,
         user.email,
       );
+      console.log({ 1: user.username, 2: username });
 
       if (
         user.username !== username ||
@@ -123,6 +130,11 @@ export class UsersService extends BaseService {
         name: user.name,
         email: user.email,
         username: user.username,
+        wallet: {
+          id: user.wallet.id,
+          balance: user.wallet.balance,
+          currency: user.wallet.currency,
+        },
         accessToken,
       });
     } catch (error) {

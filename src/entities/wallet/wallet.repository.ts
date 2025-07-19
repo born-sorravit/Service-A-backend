@@ -12,10 +12,10 @@ export class WalletRepository extends Repository<WalletEntity> {
   async createWithTransaction(
     transactionEntityManager: EntityManager,
   ): Promise<WalletEntity | null> {
-    const projectCategory = transactionEntityManager.create(WalletEntity, {
+    const wallet = transactionEntityManager.create(WalletEntity, {
       balance: '0',
       currency: ECurrency.USD,
     });
-    return await transactionEntityManager.save(projectCategory);
+    return await transactionEntityManager.save(wallet);
   }
 }
