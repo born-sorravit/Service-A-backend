@@ -92,6 +92,8 @@ export class WalletService extends BaseService {
 
       let newAmount: string;
       let rate: IResponse<RateEntity>;
+      console.log({ 1: withdrawWalletDto.currency, 2: ECurrency.USD });
+
       if (withdrawWalletDto.currency !== ECurrency.USD) {
         rate = await this.ratesService.getRate(withdrawWalletDto.currency);
         newAmount = new BigNumber(withdrawWalletDto.amount)
@@ -99,6 +101,7 @@ export class WalletService extends BaseService {
           .toFixed(2)
           .toString();
       } else {
+        rate = await this.ratesService.getRate(ECurrency.USD);
         newAmount = withdrawWalletDto.amount.toString();
       }
 
@@ -125,7 +128,6 @@ export class WalletService extends BaseService {
       });
 
       await this.walletRepository.save(fromWallet);
-
       return this.success({
         id: fromWallet.id,
         withdrawnAmount: Number(newAmount),
@@ -135,7 +137,7 @@ export class WalletService extends BaseService {
         currencyBalance: fromWallet.currency,
       });
     } catch (error) {
-      return this.error('Failed to withdraw', error.message);
+      return this.error(`Failed to withdraw ${error.message}`);
     }
   }
 }
