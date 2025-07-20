@@ -9,9 +9,11 @@ import { encryptPassword } from 'src/utils/hashPassword';
 import { JwtService } from '@nestjs/jwt';
 import { UserEntity } from 'src/entities/users/user.entity';
 import { WalletRepository } from 'src/entities/wallet/wallet.repository';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UsersService extends BaseService {
+  private readonly passwordSecret: string;
   constructor(
     @InjectEntityManager() private readonly manager: EntityManager,
     // Repositories
@@ -20,15 +22,17 @@ export class UsersService extends BaseService {
 
     // Services
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {
     super();
+    this.passwordSecret = configService.get('passwordSecret');
   }
   async register(createUserDto: CreateUserDto) {
     try {
       const password = await encryptPassword(
         createUserDto.password,
-        createUserDto.name,
-        createUserDto.email,
+        this.passwordSecret,
+        createUserDto.username,
       );
 
       const userExists = await this.userRepository.findOne({
@@ -98,14 +102,14 @@ export class UsersService extends BaseService {
 
       const isPasswordValidFromDB = await decryptPassword(
         user.password,
-        user.name,
-        user.email,
+        this.passwordSecret,
+        user.username,
       );
 
       const isPasswordValidFromClient = await decryptPassword(
         password,
-        user.name,
-        user.email,
+        this.passwordSecret,
+        user.username,
       );
       console.log({ 1: user.username, 2: username });
 

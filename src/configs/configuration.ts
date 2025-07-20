@@ -5,6 +5,7 @@ export interface AppConfig {
   database: DataSourceOptions;
   redis: RedisConfig;
   environment: string;
+  passwordSecret: string;
 }
 
 export interface DatabaseConfig {
@@ -44,4 +45,5 @@ export default (): AppConfig => ({
     db: parseInt(process.env.REDIS_DB, 10),
   },
   environment: process.env.NODE_ENV || 'development',
+  passwordSecret: process.env.PASSWORD_SECRET,
 });
