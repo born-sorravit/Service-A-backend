@@ -29,12 +29,6 @@ export class UsersService extends BaseService {
   }
   async register(createUserDto: CreateUserDto) {
     try {
-      const password = await encryptPassword(
-        createUserDto.password,
-        this.passwordSecret,
-        createUserDto.username,
-      );
-
       const userExists = await this.userRepository.findOne({
         where: [
           { username: createUserDto.username },
@@ -58,7 +52,7 @@ export class UsersService extends BaseService {
             name: createUserDto.name,
             email: createUserDto.email,
             username: createUserDto.username,
-            password: password,
+            password: createUserDto.password,
             wallet: wallet,
           };
 
