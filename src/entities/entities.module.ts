@@ -10,6 +10,8 @@ import { RateEntity } from './rate/rate.entity';
 import { RateRepository } from './rate/rate.repository';
 import { PaymentEntity } from './payment/payment.entity';
 import { PaymentRepository } from './payment/payment.repository';
+import { ApiKeyEntity } from './entities/api-key.entity';
+import { ApiKeyRepository } from './entities/api-key.repository';
 
 const Entitys = [
   ExampleEntity,
@@ -17,6 +19,7 @@ const Entitys = [
   WalletEntity,
   RateEntity,
   PaymentEntity,
+  ApiKeyEntity,
 ];
 const Repositorys = [
   ExampleRepository,
@@ -24,6 +27,7 @@ const Repositorys = [
   WalletRepository,
   RateRepository,
   PaymentRepository,
+  ApiKeyRepository,
 ];
 
 @Global()

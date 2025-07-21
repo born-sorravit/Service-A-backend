@@ -5,6 +5,7 @@ import { UsersModule } from './users/users.module';
 import { WalletModule } from './wallet/wallet.module';
 import { RatesModule } from './rates/rates.module';
 import { PaymentsModule } from './payments/payments.module';
+import { ApiKeyModule } from './api-key/api-key.module';
 
 const commonModules = [
   ExampleModule,
@@ -12,6 +13,7 @@ const commonModules = [
   WalletModule,
   RatesModule,
   PaymentsModule,
+  ApiKeyModule,
 ];
 
 @Module({
