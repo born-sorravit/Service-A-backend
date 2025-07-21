@@ -45,6 +45,7 @@ export class WalletService extends BaseService {
           .toFixed(2)
           .toString();
       } else {
+        rate = await this.ratesService.getRate(ECurrency.USD);
         newAmount = depositWalletDto.amount.toString();
       }
 
@@ -92,7 +93,6 @@ export class WalletService extends BaseService {
 
       let newAmount: string;
       let rate: IResponse<RateEntity>;
-      console.log({ 1: withdrawWalletDto.currency, 2: ECurrency.USD });
 
       if (withdrawWalletDto.currency !== ECurrency.USD) {
         rate = await this.ratesService.getRate(withdrawWalletDto.currency);
