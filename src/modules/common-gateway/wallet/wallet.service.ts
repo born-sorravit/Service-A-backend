@@ -27,6 +27,24 @@ export class WalletService extends BaseService {
     super();
   }
 
+  async getWallet(walletId: string) {
+    try {
+      const wallet = await this.walletRepository
+        .createQueryBuilder('wallet')
+        .select(['wallet.id', 'wallet.balance', 'wallet.currency'])
+        .where('wallet.id = :id', { id: walletId })
+        .getOne();
+
+      if (!wallet) {
+        return this.error('Wallet not found');
+      }
+
+      return this.success(wallet);
+    } catch (error) {
+      return this.error('Failed to get wallet', error.message);
+    }
+  }
+
   async deposit(walletId: string, depositWalletDto: DepositWalletDto) {
     try {
       const wallet = await this.walletRepository.findOne({

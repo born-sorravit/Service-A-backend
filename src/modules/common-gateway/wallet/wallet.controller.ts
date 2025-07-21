@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { WalletService } from './wallet.service';
 import { DepositWalletDto } from './dto/deposit-wallet.dto';
 import { WithdrawWalletDto } from './dto/withdraw-wallet.dto';
@@ -6,6 +6,11 @@ import { WithdrawWalletDto } from './dto/withdraw-wallet.dto';
 @Controller('wallet')
 export class WalletController {
   constructor(private readonly walletService: WalletService) {}
+
+  @Get('/:walletId')
+  async getWallet(@Param('walletId') walletId: string) {
+    return this.walletService.getWallet(walletId);
+  }
 
   @Post('/deposit/:walletId')
   async deposit(
