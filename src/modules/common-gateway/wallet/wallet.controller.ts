@@ -1,8 +1,17 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { WalletService } from './wallet.service';
 import { DepositWalletDto } from './dto/deposit-wallet.dto';
 import { WithdrawWalletDto } from './dto/withdraw-wallet.dto';
 import { ApiKeyGuard } from '../guards/api-key.guard';
+import { WithdrawWalletMultiDto } from './dto/withdraw-wallet-multi.dto';
 
 @Controller('wallet')
 export class WalletController {
@@ -28,5 +37,17 @@ export class WalletController {
     @Body() withdrawWalletDto: WithdrawWalletDto,
   ) {
     return this.walletService.withdraw(walletId, withdrawWalletDto);
+  }
+
+  @UseGuards(ApiKeyGuard)
+  @Post('/withdraw-external/:walletId')
+  async withdrawExternal(
+    @Param('walletId') walletId: string,
+    @Body() withdrawWalletMultiDto: WithdrawWalletMultiDto,
+  ) {
+    return this.walletService.withdrawExternal(
+      walletId,
+      withdrawWalletMultiDto,
+    );
   }
 }
