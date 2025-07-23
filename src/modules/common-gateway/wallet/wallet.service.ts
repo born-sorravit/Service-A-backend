@@ -118,7 +118,7 @@ export class WalletService extends BaseService {
           const recipientUser = await transactionEntityManager
             .createQueryBuilder(UserEntity, 'user')
             .innerJoinAndSelect('user.wallet', 'wallet')
-            .where('LOWER(user.username) = LOWER(:username)', {
+            .where('(user.username) = (:username)', {
               username: withdrawWalletDto.toUsername,
             })
             .getOne();
@@ -202,12 +202,12 @@ export class WalletService extends BaseService {
           }
 
           const toUsersDto = withdrawWalletMultiDto.toUsers;
-          const usernames = toUsersDto.map((u) => u.username.toLowerCase());
+          const usernames = toUsersDto.map((u) => u.username);
 
           const recipientUsers = await transactionEntityManager
             .createQueryBuilder(UserEntity, 'user')
             .innerJoinAndSelect('user.wallet', 'wallet')
-            .where('LOWER(user.username) IN (:...usernames)', { usernames })
+            .where('(user.username) IN (:...usernames)', { usernames })
             .getMany();
 
           if (recipientUsers.length !== usernames.length) {
